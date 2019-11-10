@@ -1,0 +1,13 @@
+.nav-link {
+    font-size: 1.25rem;
+    text-decoration: none;
+    text-align: center;
+
+    &:hover {
+        color: lighten($col-pri, 20%) !important;
+    }
+}
+
+.navbar {
+    background-color: #343338;
+}
