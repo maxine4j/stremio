@@ -4,21 +4,83 @@ import { Helmet } from "react-helmet";
 // import Container from 'react-bootstrap/Container';
 // import Row from 'react-bootstrap/Row';
 // import Col from 'react-bootstrap/Col';
-import Player from '../components/Player'
+import Player from '../components/Player';
+import Movie from '../components/Movie';
+import Stremio from 'stremio-addon-client';
 
 
 class Home extends React.Component {
 
+    constructor(props) {
+        super(props);
+        this.state = {};
+    }
+
+    componentDidMount() {
+        // catalogue addon
+        let cl = "https://v3-cinemeta.strem.io/manifest.json"
+        Stremio.detectFromURL(cl)
+        .then((resp) => {
+            console.log(resp);
+            this.catalog = resp.addon;
+        });
+
+        // stream addon
+        let addon = "https://juan.ultimatestremioaddons.club/stremioget/stremio/v1"
+        Stremio.detectFromURL(addon)
+        .then((resp) => {
+            console.log(resp);
+            this.stream = resp.addon;
+            this.playGodfather();
+        });
+
+    }
+
+    searchStremio() {
+        let query = document.getElementById("search-query").value;
+        this.catalog.get("catalog", "movie", "top", { search: query })
+        .then((resp) => {
+            console.log("search result: ", resp)
+            this.setState({
+                "results": resp.metas
+            });
+        });
+    }
+
+    playGodfather() {
+        let gfid = "tt0068646";
+        this.stream.get("stream", "movie", gfid)
+        .then((resp) => {
+            console.log("got godfather stream", resp);
+            this.setState({
+                tid: resp.streams[0].infoHash,
+                filename: resp.streams[0].filename
+            });
+        });
+    }
+
     render() {
-        let tid = "magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent";
+        let resultsJsx = [];
+        if (this.state.results) {
+            for (let i = 0; i < this.state.results.length; i++) {
+                resultsJsx.push(<Movie key={i} meta={this.state.results[i]} />);
+            }
+        }
 
         return (
             <>
             <Helmet>
                 <title>Stremio</title>
             </Helmet>
-            <h1>HOME</h1>
-            <Player torrentId={tid}></Player>
+
+            <h1>Player</h1>
+            <p>{this.state.filename}</p>
+            <Player torrentId={this.state.tid} />
+
+            <h1>Search</h1>
+            <input id="search-query" type="text"></input>
+            <button onClick={this.searchStremio.bind(this)}>Search</button>
+            {resultsJsx}
             </>
         )
     }

@@ -1,12 +1,14 @@
 import React from 'react';
 import WebTorrent from 'webtorrent'
 
+const trackers = ['wss://tracker.btorrent.xyz', 'wss://tracker.openwebtorrent.com', 'wss://tracker.fastcast.nz']
 
 class Player extends React.Component {
-
     constructor(props) {
         super(props);
-        this.client = new WebTorrent()
+        this.client = new WebTorrent({
+            announce: trackers,
+        })
         this.state = {
             downloaded: 0,
             downloadSpeed: 0,
@@ -15,7 +17,13 @@ class Player extends React.Component {
     }
 
     componentDidMount() {
+        console.log("Attempting to start torrent with hash:", this.props.torrentId);
         this.client.add(this.props.torrentId, (torrent) => {
+            console.log("This is the player torrent: ", torrent);
+            for (let i = 0; i < torrent.files.length; i++) {
+                console.log("Appending a file to body:");
+                torrent.files[i].appendTo("body");
+            }
             var file = torrent.files.find(function (file) {
                 return file.name.endsWith('.mp4');
             })

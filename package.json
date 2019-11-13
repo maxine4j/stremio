@@ -10,6 +10,7 @@
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.2.0",
     "sass": "^1.23.3",
+    "stremio-addon-client": "^1.16.1",
     "webtorrent": "^0.107.16"
   },
   "scripts": {
